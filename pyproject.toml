@@ -1,0 +1,47 @@
+[project]
+name = "pgx1"
+version = "0.1.0"
+description = "Portable, speed-optimized JAX game environments with a pgx-compatible API. One self-contained file per environment."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Ted" }]
+dependencies = [
+    "jax",
+    "numpy",
+]
+
+[project.optional-dependencies]
+# TPU runtime for JAX on a Cloud TPU VM. Install with: uv sync --extra tpu
+tpu = ["jax[tpu]"]
+# JAX profiler viewer, for `just prof-pallas`. Install with:
+#   uv sync --extra tpu --extra prof   (both extras in one invocation -- `uv
+#   sync --extra X` reconciles the venv to *exactly* the extras listed, so a
+#   separate `uv sync --extra prof` call would uninstall `tpu`'s packages).
+prof = [
+    "tensorboard==2.20.0",
+    "tensorboard-plugin-profile>=2.20.0",
+    "xprof==2.21.4",
+    # `uv` venvs don't bundle setuptools/pip by default; tensorboard still
+    # imports the old `pkg_resources` API. setuptools>=81 dropped
+    # pkg_resources entirely, so this must stay pinned below that.
+    "setuptools<81",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pgx1"]
+
+[dependency-groups]
+# `pgx` is upstream sotetsuk/pgx from PyPI, used only as the comparison
+# baseline in the equivalence tests and `scripts/bench_envs.py`.
+# `chess` (python-chess) is the independent oracle
+# `scripts/convert_pro_games.py` uses to derive the vendored pro-game
+# expectations.
+dev = ["pytest", "pgx", "chess"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
